@@ -52,8 +52,10 @@ A modern, secure, and responsive login/signup system with multiple authenticatio
 - Environment variable security
 
 ## login
-![Screenshot 2025-05-23 173200](https://github.com/user-attachments/assets/4e81b371-df37-4feb-8c9c-e7d12b0be1ed)
+![Screenshot 2025-05-26 123022](https://github.com/user-attachments/assets/7846cb6f-c871-4e87-a52c-230c878d4a59)
+
 
 ## signup
-![Screenshot 2025-05-23 173213](https://github.com/user-attachments/assets/bbe9e90b-5d12-45d8-a8d0-67d3609e398f)
+![Screenshot 2025-05-26 123034](https://github.com/user-attachments/assets/9f09007f-1747-4ee8-b1d6-85c9d919a240)
+
 
