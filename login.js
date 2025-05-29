@@ -45,53 +45,129 @@ function showNotification(message, isSuccess = true, isDayMode = true) {
     existingNotification.remove();
   }
   
-  // Create notification element
+  // Create notification container
   const notification = document.createElement('div');
   notification.className = 'notification-bar';
   
+  // Create icon element
+  const icon = document.createElement('span');
+  icon.className = 'notification-icon';
+  icon.innerHTML = isSuccess ? '✓' : '✕';
+  
+  // Create message element
+  const messageEl = document.createElement('span');
+  messageEl.className = 'notification-message';
+  messageEl.textContent = message;
+  
+  // Create progress bar
+  const progressBar = document.createElement('div');
+  progressBar.className = 'notification-progress';
+  
   // Set colors based on day/night mode and success/error
   if (isDayMode) {
-    // Day mode colors
-    notification.style.backgroundColor = isSuccess ? 'rgba(46, 125, 50, 0.9)' : 'rgba(198, 40, 40, 0.9)';
-    notification.style.color = '#fff';
-    notification.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+    // Day mode colors - More distinct colors
+    if (isSuccess) {
+      notification.style.backgroundColor = '#1b5e20'; // Darker green
+      notification.style.color = '#ffffff';
+      progressBar.style.backgroundColor = '#4caf50'; // Lighter green for progress
+      icon.style.backgroundColor = '#43a047'; // Medium green for icon
+    } else {
+      notification.style.backgroundColor = '#b71c1c'; // Darker red
+      notification.style.color = '#ffffff';
+      progressBar.style.backgroundColor = '#f44336'; // Lighter red for progress
+      icon.style.backgroundColor = '#d32f2f'; // Medium red for icon
+    }
   } else {
-    // Night mode colors
-    notification.style.backgroundColor = isSuccess ? 'rgba(76, 175, 80, 0.8)' : 'rgba(244, 67, 54, 0.8)';
-    notification.style.color = '#fff';
-    notification.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.5)';
+    // Night mode colors - More distinct colors
+    if (isSuccess) {
+      notification.style.backgroundColor = '#2e7d32'; // Slightly lighter green for night
+      notification.style.color = '#ffffff';
+      progressBar.style.backgroundColor = '#66bb6a'; // Even lighter green for progress
+      icon.style.backgroundColor = '#43a047'; // Medium green for icon
+    } else {
+      notification.style.backgroundColor = '#c62828'; // Slightly lighter red for night
+      notification.style.color = '#ffffff';
+      progressBar.style.backgroundColor = '#ef5350'; // Even lighter red for progress
+      icon.style.backgroundColor = '#e53935'; // Medium red for icon
+    }
   }
-  
-  notification.textContent = message;
   
   // Style the notification
   notification.style.position = 'fixed';
   notification.style.top = '20px';
   notification.style.right = '20px';
-  notification.style.padding = '12px 20px';
-  notification.style.borderRadius = '4px';
+  notification.style.padding = '16px 24px';
+  notification.style.borderRadius = '6px';
   notification.style.zIndex = '1000';
-  notification.style.transform = 'translateX(100%)';
+  notification.style.display = 'flex';
+  notification.style.alignItems = 'center';
+  notification.style.gap = '12px';
+  notification.style.minWidth = '300px';
+  notification.style.maxWidth = '400px';
+  notification.style.transform = 'translateX(120%)';
   notification.style.transition = 'transform 0.3s ease-out';
+  notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+  notification.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+  
+  // Style the icon
+  icon.style.fontSize = '20px';
+  icon.style.display = 'flex';
+  icon.style.alignItems = 'center';
+  icon.style.justifyContent = 'center';
+  icon.style.width = '28px';
+  icon.style.height = '28px';
+  icon.style.borderRadius = '50%';
+  icon.style.color = '#ffffff';
+  
+  // Style the message
+  messageEl.style.flex = '1';
+  messageEl.style.fontSize = '14px';
+  messageEl.style.lineHeight = '1.4';
+  messageEl.style.fontWeight = '500';
+  
+  // Style the progress bar
+  progressBar.style.position = 'absolute';
+  progressBar.style.bottom = '0';
+  progressBar.style.left = '0';
+  progressBar.style.width = '100%';
+  progressBar.style.height = '4px';
+  progressBar.style.transform = 'scaleX(0)';
+  progressBar.style.transformOrigin = 'left';
+  progressBar.style.transition = 'transform 4s linear';
+  progressBar.style.borderRadius = '0 0 6px 6px';
+  
+  // Add elements to notification
+  notification.appendChild(icon);
+  notification.appendChild(messageEl);
+  notification.appendChild(progressBar);
   
   // Add to DOM
   document.body.appendChild(notification);
   
-  // Trigger animation
+  // Trigger animations
   setTimeout(() => {
     notification.style.transform = 'translateX(0)';
+    progressBar.style.transform = 'scaleX(1)';
   }, 10);
   
   // Remove after 4 seconds
   setTimeout(() => {
-    notification.style.transform = 'translateX(100%)';
+    notification.style.transform = 'translateX(120%)';
     setTimeout(() => {
       notification.remove();
-    }, 500);
+    }, 300);
   }, 4000);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Prevent back button
+  window.history.pushState(null, "", window.location.href);
+  window.history.pushState(null, "", window.location.href);
+  window.onpopstate = function() {
+    window.history.forward();
+    return false;
+  };
+
   // First fetch the Google Client ID from server
   fetch('/api/google-client-id')
     .then(response => response.json())

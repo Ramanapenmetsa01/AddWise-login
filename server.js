@@ -465,3 +465,53 @@ app.get('/api/google-client-id', (req, res) => {
   console.log('Serving Google Client ID to frontend');
   res.json({ clientId: clientId });
 });
+
+// Add these after your existing middleware
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  next();
+});
+
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+  const bearerHeader = req.headers['authorization'];
+  
+  if (!bearerHeader) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+  
+  const bearer = bearerHeader.split(' ');
+  const token = bearer[1];
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+// Protected route middleware
+const protectRoute = (req, res, next) => {
+  if (!req.headers['authorization']) {
+    return res.redirect('/');
+  }
+  next();
+};
+
+// Apply protection to dashboard route
+app.get('/dashboard', protectRoute, (req, res) => {
+  res.sendFile(path.join(__dirname, 'dashboard.html'));
+});
+
+// Token verification endpoint
+app.get('/api/verify-token', verifyToken, (req, res) => {
+  res.json({ valid: true, user: req.user });
+});
+
+// Logout endpoint
+app.post('/api/logout', verifyToken, (req, res) => {
+  // In a real application, you might want to invalidate the token in a token blacklist
+  res.json({ message: 'Logged out successfully' });
+});
