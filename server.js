@@ -11,7 +11,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, './')));
 
@@ -35,8 +40,11 @@ async function initializeDatabase() {
     await connection.execute(`
       CREATE TABLE IF NOT EXISTS user_signups (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100),
         email VARCHAR(100) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
+        google_id VARCHAR(255),
+        profile_picture VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -133,53 +141,6 @@ app.post('/api/login', async (req, res) => {
     }
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Register route
-app.post('/api/register', async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    
-    // Check if user exists
-    const [existingUsers] = await pool.execute(
-      'SELECT * FROM user_signups WHERE email = ?',
-      [email]
-    );
-    
-    if (existingUsers.length > 0) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-    
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    
-    // Insert new user with name
-    const [result] = await pool.execute(
-      'INSERT INTO user_signups (name, email, password) VALUES (?, ?, ?)',
-      [name, email, hashedPassword]
-    );
-    
-    // Create token
-    const token = jwt.sign(
-      { id: result.insertId, email, name },
-      process.env.JWT_SECRET || 'your_jwt_secret',
-      { expiresIn: '1h' }
-    );
-    
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: result.insertId,
-        name,
-        email
-      }
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -430,7 +391,7 @@ app.post('/api/google-login', async (req, res) => {
       process.env.JWT_SECRET || 'your_jwt_secret',
       { expiresIn: '1h' }
     );
-    
+ 
     // Record login
     await pool.execute(
       'INSERT INTO login_history (email, login_status, ip_address) VALUES (?, ?, ?)',
